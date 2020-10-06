@@ -17,11 +17,11 @@ def initial_state():
             [EMPTY, EMPTY, EMPTY],
             [EMPTY, EMPTY, EMPTY]]
 
+
 def player(board):
     """
     Returns player who has the next turn on a board.
     """
-
     if board == initial_state():
         return X
 
@@ -31,7 +31,7 @@ def player(board):
     for row in board:
         PlayerX += row.count(X)
         PlayerO += row.count(O)
-
+        
     if PlayerX > PlayerO:
         return O
     else:
@@ -49,7 +49,7 @@ def actions(board):
         for col in range(3):
             if board[row][col] == EMPTY:
                 Output.add((row, col))
-                
+    
     return Output
 
 
@@ -71,7 +71,6 @@ def winner(board):
     """
     Returns the winner of the game, if there is one.
     """
-    
     for mark in [X, O]:
         
         # check for Row
@@ -98,7 +97,6 @@ def terminal(board):
     """
     Returns True if game is over, False otherwise.
     """
-    
     # If there is a winner
     if winner(board) is not None:
         return True
@@ -108,13 +106,13 @@ def terminal(board):
     for row in range(3):
         for col in range(3):
             all_coord.append((row, col))
-    
-    if all(board[row][col] == None for (row, col) in all_coord):
-        return True
 
+    if not any(board[row][col] == None for (row, col) in all_coord):
+        return True
 
     # Game is still on!
     return False
+
 
 def utility(board):
     """
@@ -124,12 +122,62 @@ def utility(board):
         return 1
     if winner(board) == O:
         return -1
+    
     return 0
+
 
 def minimax(board):
     """
     Returns the optimal action for the current player on the board.
     """
     
+    # If the game is done.
     if terminal(board):
         return None
+
+    optimal_move = None
+    max_val = -math.inf
+    min_val = math.inf
+
+    # If the current player is X
+    if player(board) == X:
+        for action in actions(board):
+            val = minmax_val(result(board, action), X)
+            if val > max_val:
+                max_val = val
+                optimal_move = action
+
+    # If the current player is O
+    elif player(board) == O:
+        for action in actions(board):
+            val = minmax_val(result(board, action), O)
+            if val < min_val:
+                min_val = val
+                optimal_move = action
+
+    return optimal_move
+
+
+def minmax_val(board, player):
+    """
+    Returns the minmax_val for each possible move
+    """
+    # If the board is terminal return the points. 
+    if terminal(board):
+        return utility(board)
+
+    # Recurse by predicting O's optimal move
+    if player == X:
+        val = math.inf
+        for action in actions(board):
+            val = min(val, minmax_val(result(board, action), O))
+
+        return val
+
+    # Recurse by predicting X's optimal move.
+    if player == O:
+        val = -math.inf
+        for action in actions(board):
+            val = max(val, minmax_val(result(board, action), X))
+        
+        return val
