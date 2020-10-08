@@ -9,24 +9,56 @@ BKnave = Symbol("B is a Knave")
 CKnight = Symbol("C is a Knight")
 CKnave = Symbol("C is a Knave")
 
+# What A, B, C could be
+XoRA = And(Or(AKnight, AKnave), Not(And(AKnight, AKnave)))
+XoRB = And(Or(BKnight, BKnave), Not(And(BKnight, BKnave)))
+XoRC = And(Or(CKnight, CKnave), Not(And(CKnight, CKnave)))
+
 # Puzzle 0
 # A says "I am both a knight and a knave."
+
+# The Statment said:
+AStatement = And(AKnight, AKnave)
+
 knowledge0 = And(
-    # TODO
+        XoRA,
+        # Check A Statement
+        Implication(AKnight, AStatement), 
+        Implication(AKnave, Not(AStatement))
 )
 
 # Puzzle 1
 # A says "We are both knaves."
 # B says nothing.
+
+# The Statement said:
+AStatement = And(AKnave, BKnave)
+
 knowledge1 = And(
-    # TODO
+        XoRA,
+        XoRB,
+        # Check A Statement
+        Implication(AKnight, AStatement),
+        Implication(AKnave, Not(AStatement))
 )
 
 # Puzzle 2
 # A says "We are the same kind."
 # B says "We are of different kinds."
+
+# The Statement said:
+AStatement = Or(And(AKnight, BKnight), And(AKnave, BKnave))
+BStatement = Or(And(AKnight, BKnave), And(AKnave, BKnight))
+
 knowledge2 = And(
-    # TODO
+        XoRA,
+        XoRB,
+        # Check A Statement
+        Implication(AKnight, AStatement),
+        Implication(AKnave, Not(AStatement)),
+        # Check B Statement
+        Implication(BKnight, BStatement),
+        Implication(BKnave, Not(BStatement))
 )
 
 # Puzzle 3
@@ -34,8 +66,28 @@ knowledge2 = And(
 # B says "A said 'I am a knave'."
 # B says "C is a knave."
 # C says "A is a knight."
+
+# The Statement said:
+AStatementKnight = And(AKnight, AKnight)
+
+AStatementKnave = And(AKnight, AKnave)
+
+BStatementA = And(BKnight, AStatementKnave)
+
+BStatementC = And(BKnight, CKnave)
+
+CStatement = And(CKnight, AKnight)
+
 knowledge3 = And(
-    # TODO
+    XoRA,
+    XoRB,
+    XoRC,
+
+    # Check A Statement
+    Or(
+        Implication
+    )
+        
 )
 
 
