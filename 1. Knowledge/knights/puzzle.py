@@ -68,15 +68,8 @@ knowledge2 = And(
 # C says "A is a knight."
 
 # The Statement said:
-AStatementKnight = And(AKnight, AKnight)
-
-AStatementKnave = And(AKnight, AKnave)
-
-BStatementA = And(BKnight, AStatementKnave)
-
-BStatementC = And(BKnight, CKnave)
-
-CStatement = And(CKnight, AKnight)
+AStatement = And(Implication(AKnight, AKnave), Implication(AKnave, AKnight))
+BStatement = And(Implication(AKnight, AKnight), Implication(AKnave, AKnave))
 
 knowledge3 = And(
     XoRA,
@@ -84,9 +77,15 @@ knowledge3 = And(
     XoRC,
 
     # Check A Statement
-    Or(
-        Implication
-    )
+    # Check B Statement
+    Implication(BKnight, AStatement),
+    Implication(BKnave, BStatement),
+    Implication(BKnight, CKnave),
+    Implication(BKnave, CKnight),
+
+    # Check C Statement
+    Implication(CKnight, AKnight),
+    Implication(CKnave, AKnave)
         
 )
 
