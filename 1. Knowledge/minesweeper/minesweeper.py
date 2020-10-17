@@ -195,17 +195,35 @@ class MinesweeperAI():
         self.moves_made.add(cell)
         self.mark_safe(cell)
         
-        # Find neighbors
+        # create new Sentence
         neighbors = self.find_neighbors(cell)
+        new_sentence = Sentence(neighbors, count)
 
-        mine_count = count
-        safe_neighbors = set()
+        for mine in self.mines:
+            new_sentence.mark_mine(mine)
+        for safe in self.cells:
+            new_sentence.mark_cell(safe)
 
-        for neighbor in neighbors:
-            if neighbor in self.mines:
+        self.knowledge.append(new_sentence)
+
+        # Mark new safes and mines from knowledge base
+        new_safes = set()
+        new_mines = set()
+
+        for sentence in self.knowledge:
+            for mine in sentence.known_mines():
+                new_mines.add(mine)
+            for safe in sentnece.known_safes():
+                new_safes.add(safe)
+
+        for mine in new_mines:
+            self.mark_mine(mine)
+        for safe in new_safes:
+            self.mark_safe(safe)
 
 
         
+
     def find_neighbors(self, cell):
         """
         returns all neighbors of cell
