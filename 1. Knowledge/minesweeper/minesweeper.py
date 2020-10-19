@@ -105,7 +105,7 @@ class Sentence():
         """
         Returns the set of all cells in self.cells known to be mines.
         """
-        if self.count = len(self.cells):
+        if self.count == len(self.cells):
             return self.cells
         else:
             return set()
@@ -201,8 +201,8 @@ class MinesweeperAI():
 
         for mine in self.mines:
             new_sentence.mark_mine(mine)
-        for safe in self.cells:
-            new_sentence.mark_cell(safe)
+        for safe in self.safes:
+            new_sentence.mark_safe(safe)
 
         self.knowledge.append(new_sentence)
 
@@ -213,7 +213,7 @@ class MinesweeperAI():
         for sentence in self.knowledge:
             for mine in sentence.known_mines():
                 new_mines.add(mine)
-            for safe in sentnece.known_safes():
+            for safe in sentence.known_safes():
                 new_safes.add(safe)
 
         for mine in new_mines:
@@ -221,6 +221,18 @@ class MinesweeperAI():
         for safe in new_safes:
             self.mark_safe(safe)
 
+        # Add new sentences from the information of the knowledge base
+
+        sentence_add = []
+
+        for sentence in self.knowledge:
+            if new_sentence.cells and sentence.cells != new_sentence.cells:
+                if sentence.cells.issubset(new_sentence.cells):
+                    sentence_add.append(Sentence(new_sentence.cells-sentence.cells, new_sentence.count-sentence.count))
+                if new_sentence.cells.issubset(sentence.cells):
+                    sentence_add.append(Sentnece(sentence.cells-new_sentence.cells, sentence.count-new_sentence.count))
+
+        self.knowledge += sentence_add
 
         
 
@@ -238,10 +250,10 @@ class MinesweeperAI():
             if (j-1 >= 0):
                 neighbors.add((i-1, j-1))
             if (j+1 <= self.width-1):
-                neightbors.add((i-1, j+1))
+                neighbors.add((i-1, j+1))
 
         # Find all neighbors below
-        if (i+1 <= self.length-1):
+        if (i+1 <= self.height-1):
             neighbors.add((i+1,j))
             if (j-1 >= 0):
                 neighbors.add((i+1, j-1))
@@ -250,12 +262,12 @@ class MinesweeperAI():
 
         # Find all neighbors to the side
         if(j-1 >= 0):
-            neighbors.add(i, j-1)
+            neighbors.add((i, j-1))
         if(j+1 <= self.width-1):
-            neighbors.add(i, j+1)
+            neighbors.add((i, j+1))
 
 
-        return neighors
+        return neighbors
 
     def make_safe_move(self):
         """
@@ -280,3 +292,11 @@ class MinesweeperAI():
             1) have not already been chosen, and
             2) are not known to be mines
         """
+
+        all_moves = set(itertools.product(range(self.height), range(self.width)))
+        moves_left = all_moves - self.mines - self.moves_made
+
+        if moves_left:
+            return random.choice(tuple(moves_left))
+        else:
+            return None
