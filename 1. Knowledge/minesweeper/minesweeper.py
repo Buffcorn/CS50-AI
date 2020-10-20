@@ -197,13 +197,22 @@ class MinesweeperAI():
         
         # create new Sentence
         neighbors = self.find_neighbors(cell)
-        new_sentence = Sentence(neighbors, count)
 
-        for mine in self.mines:
-            new_sentence.mark_mine(mine)
-        for safe in self.safes:
-            new_sentence.mark_safe(safe)
+        # remove already known neighbor states
+        mine_count = count
+        known_neighbors = set()
 
+        for neighbor in neighbors:
+            if neighbor in self.mines:
+                known_neighbors.add(neighbor)
+                mine_count -= 1
+            if neighbor in self.safes:
+                known_neighbors.add(neighbor)
+
+        neighbors -= known_neighbors
+
+        # Add new sentence to knowledge base
+        new_sentence = Sentence(neighbors, mine_count)
         self.knowledge.append(new_sentence)
 
         # Mark new safes and mines from knowledge base
@@ -221,8 +230,17 @@ class MinesweeperAI():
         for safe in new_safes:
             self.mark_safe(safe)
 
-        # Add new sentences from the information of the knowledge base
+        
+        # Remove empty knowledge sentences
+        sentences_to_remove = []
+        for sentence in self.knowledge:
+            if sentence.cells == set():
+                sentences_to_remove.append(sentence)
+        for sentence in sentences_to_remove:
+            self.knowledge.remove(sentence)
 
+
+        # Add new sentences from the information of the knowledge base
         sentence_add = []
 
         for sentence in self.knowledge:
@@ -230,11 +248,9 @@ class MinesweeperAI():
                 if sentence.cells.issubset(new_sentence.cells):
                     sentence_add.append(Sentence(new_sentence.cells-sentence.cells, new_sentence.count-sentence.count))
                 if new_sentence.cells.issubset(sentence.cells):
-                    sentence_add.append(Sentnece(sentence.cells-new_sentence.cells, sentence.count-new_sentence.count))
+                    sentence_add.append(Sentence(sentence.cells-new_sentence.cells, sentence.count-new_sentence.count))
 
         self.knowledge += sentence_add
-
-        
 
     def find_neighbors(self, cell):
         """
@@ -258,7 +274,7 @@ class MinesweeperAI():
             if (j-1 >= 0):
                 neighbors.add((i+1, j-1))
             if (j+1 <= self.width-1):
-                neighbors.add((i-1, j+1))
+                neighbors.add((i+1, j+1))
 
         # Find all neighbors to the side
         if(j-1 >= 0):
@@ -294,9 +310,9 @@ class MinesweeperAI():
         """
 
         all_moves = set(itertools.product(range(self.height), range(self.width)))
-        moves_left = all_moves - self.mines - self.moves_made
+        moves_left = list(all_moves - self.mines - self.moves_made)
 
-        if moves_left:
-            return random.choice(tuple(moves_left))
-        else:
+        if not moves_left:
             return None
+
+        return random.choice(moves_left)
