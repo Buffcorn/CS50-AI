@@ -2,6 +2,7 @@ import os
 import random
 import re
 import sys
+import math
 
 DAMPING = 0.85
 SAMPLES = 10000
@@ -63,13 +64,13 @@ def transition_model(corpus, page, damping_factor):
         for link in corpus:
             distribution[link] = (1-damping_factor) / len(corpus)
             if link in corpus[page]:
-                distrubution[link] += damping_factor / len(corpus[page])
+                distribution[link] += damping_factor / len(corpus[page])
 
     else:
         for link in corpus:
-            distrubution[link] = 1 / len(corpus)
+            distribution[link] = 1 / len(corpus)
 
-    return distrubution
+    return distribution
 
 def sample_pagerank(corpus, damping_factor, n):
     """
@@ -81,17 +82,17 @@ def sample_pagerank(corpus, damping_factor, n):
     PageRank values should sum to 1.
     """
     estimated_pagerank = {}
-    sample = random.choice(list(corups.keys()))
+    sample = random.choice(list(corpus.keys()))
 
     for page in corpus:
         estimated_pagerank[page] = 0
 
     for _ in range(n-1):
         estimated_pagerank[sample] += 1
-        distrubition = transition_model(corpus, sample, damping_factor)
-        sample = random.choice(list(distribution.key()), distribution.values())[0]
+        distribution = transition_model(corpus, sample, damping_factor)
+        sample = random.choices(list(distribution.keys()), distribution.values())[0]
 
-    estimated_pagerank = {page: num_samples/n for page, num_samples in pageranks.items()}
+    estimated_pagerank = {page: num_samples/n for page, num_samples in estimated_pagerank.items()}
 
     return estimated_pagerank
 
@@ -107,7 +108,41 @@ def iterate_pagerank(corpus, damping_factor):
     their estimated PageRank value (a value between 0 and 1). All
     PageRank values should sum to 1.
     """
-    raise NotImplementedError
+    
+    pagerank = {}
+    repeat = True
+    newrank = {}
+
+    for page in corpus:
+        pagerank[page] = 1/len(corpus)
+
+
+    while repeat:
+        # Calculate new rank values based on all of the current rank values
+        for page in pagerank:
+            total = float(0)
+
+            for possible_page in corpus:
+                # We consider each possible page that links to current page
+                if page in corpus[possible_page]:
+                    total += pagerank[possible_page] / len(corpus[possible_page])
+                # A page that has no links is interpreted as having one link for every page (including itself)
+                if not corpus[possible_page]:
+                    total += pagerank[possible_page] / len(corpus)
+
+            newrank[page] = (1 - damping_factor) / len(corpus) + damping_factor * total
+
+        repeat = False
+
+        # If any of the values changes by more than the threshold, repeat process
+        for page in pagerank:
+            if not math.isclose(newrank[page], pagerank[page], abs_tol=0.001):
+                repeat = True
+            # Assign new values to current values
+            pagerank[page] = newrank[page]
+
+    return pagerank
+
 
 
 if __name__ == "__main__":
